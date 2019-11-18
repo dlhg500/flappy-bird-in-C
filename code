@@ -1,0 +1,313 @@
+#include <graphics.h>
+#include <conio.h>
+#include <stdio.h>
+#include <stdlib.h>
+#pragma comment(lib,"Winmm.lib")
+
+
+IMAGE img_bk;
+IMAGE img_bd1, img_bd2;//鸟的图片
+IMAGE img_bar_up1, img_bar_up2, img_bar_up2_1, img_bar_up2_2, img_bar_up3_1, img_bar_up3_2;//上方柱子的图片
+IMAGE img_bar_down1, img_bar_down2, img_bar_down2_1, img_bar_down2_2, img_bar_down3_1, img_bar_down3_2;//下方柱子的图片
+IMAGE num1[10], num2[10];//计分数字图片
+int bird_x, bird_y;//鸟坐标
+int bar_up_x, bar_up_y, bar_up_x2, bar_up_y2,bar_up_x3, bar_up_y3;//上方柱子的坐标
+int bar_down_x, bar_down_y, bar_down_x2, bar_down_y2, bar_down_x3, bar_down_y3;//下方柱子的坐标
+int i = 0, left = 0, right = 0, n = 5;
+int score = 0;//分数&分数左右
+int a,b;//界面大小
+int c, d;//死亡图标位置
+int e1,e2, f=50;//分数位置
+MOUSEMSG m;
+
+void startup()//初始化
+{
+	initgraph(a, b);//设置画布大小
+	BeginBatchDraw();
+	loadimage(&img_bk, "..\\source\\background.jpg");//背景
+	loadimage(&img_bd1, "..\\source\\bird1.jpg");
+	loadimage(&img_bd2, "..\\source\\bird2.jpg");//鸟
+
+	loadimage(&img_bar_up1, "..\\source\\bar_up1.gif");
+	loadimage(&img_bar_up2, "..\\source\\bar_up2.gif");//上方柱子图片
+	loadimage(&img_bar_down1, "..\\source\\bar_down1.gif");
+	loadimage(&img_bar_down2, "..\\source\\bar_down2.gif");//下方柱子图片
+
+	
+
+	
+
+	loadimage(&num1[0], "..\\source\\01.jpg");
+	loadimage(&num2[0], "..\\source\\02.jpg");
+	loadimage(&num1[1], "..\\source\\11.jpg");
+	loadimage(&num2[1], "..\\source\\12.jpg");
+	loadimage(&num1[2], "..\\source\\21.jpg");
+	loadimage(&num2[2], "..\\source\\22.jpg");
+	loadimage(&num1[3], "..\\source\\31.jpg");
+	loadimage(&num2[3], "..\\source\\32.jpg");
+	loadimage(&num1[4], "..\\source\\41.jpg");
+	loadimage(&num2[4], "..\\source\\42.jpg");
+	loadimage(&num1[5], "..\\source\\51.jpg");
+	loadimage(&num2[5], "..\\source\\52.jpg");
+	loadimage(&num1[6], "..\\source\\61.jpg");
+	loadimage(&num2[6], "..\\source\\62.jpg");
+	loadimage(&num1[7], "..\\source\\71.jpg");
+	loadimage(&num2[7], "..\\source\\72.jpg");
+	loadimage(&num1[8], "..\\source\\81.jpg");
+	loadimage(&num2[8], "..\\source\\82.jpg");
+	loadimage(&num1[9], "..\\source\\91.jpg");
+	loadimage(&num2[9], "..\\source\\92.jpg");//数字
+
+	
+
+	mciSendString("open ..\\source\\background(1).mp3 alias bkmusic", NULL, 0, NULL);
+	mciSendString("play bkmusic repeat", NULL, 0, NULL);
+}
+void show()
+{
+	putimage(0, 0, &img_bk);//载入背景
+	putimage(bird_x, bird_y, &img_bd1, NOTSRCERASE);
+	putimage(bird_x, bird_y, &img_bd2, SRCERASE);//载入小鸟
+
+	putimage(bar_up_x, bar_up_y, &img_bar_up1, NOTSRCERASE);
+	putimage(bar_up_x, bar_up_y, &img_bar_up2, SRCERASE);//载入上方柱子
+	putimage(bar_down_x, bar_down_y, &img_bar_down1, NOTSRCERASE);
+	putimage(bar_down_x, bar_down_y, &img_bar_down2, SRCERASE);//输出下方柱子
+
+	putimage(bar_up_x2, bar_up_y2, &img_bar_up1, NOTSRCERASE);
+	putimage(bar_up_x2, bar_up_y2, &img_bar_up2, SRCERASE);//载入上方柱子
+	putimage(bar_down_x2, bar_down_y2, &img_bar_down1, NOTSRCERASE);
+	putimage(bar_down_x2, bar_down_y2, &img_bar_down2, SRCERASE);//输出下方柱子
+
+	putimage(bar_up_x3, bar_up_y3, &img_bar_up1, NOTSRCERASE);
+	putimage(bar_up_x3, bar_up_y3, &img_bar_up2, SRCERASE);//载入上方柱子
+	putimage(bar_down_x3, bar_down_y3, &img_bar_down1, NOTSRCERASE);
+	putimage(bar_down_x3, bar_down_y3, &img_bar_down2, SRCERASE);//输出下方柱子
+
+	
+
+	if (score < 10)
+	{
+		putimage(e1, f, &num1[score], NOTSRCERASE);
+		putimage(e1, f, &num2[score], SRCINVERT);
+	}
+	else
+	{
+		right = score % 10;
+		left = score / 10;
+		putimage(e1, f, &num1[left], NOTSRCERASE);
+		putimage(e1, f, &num2[left], SRCINVERT);
+		putimage(e2, f, &num1[right], NOTSRCERASE);
+		putimage(e2, f, &num2[right], SRCINVERT);
+	}
+	FlushBatchDraw();
+	Sleep(50);
+
+}
+void bird()
+{
+	char input;
+
+
+	if (_kbhit())
+	{
+		input = _getch();
+		if (input == ' ')
+			
+			_getch();
+
+	}
+	else if (bird_y < 580)
+		bird_y += 3;
+	while (MouseHit())
+	{
+		// 获取一条鼠标消息
+		m = GetMouseMsg();
+		switch (m.uMsg)
+		{
+		case WM_LBUTTONDOWN:
+		{
+			if (bird_y > 20)//以防小鸟飞出外
+			bird_y -= 60; 
+			mciSendString("closejpmusic", NULL, 0, NULL);
+			mciSendString("open ..\\source\\Jump.mp3 alias jpmusic", NULL, 0, NULL);
+			mciSendString("open music", NULL, 0, NULL);
+		}
+			break;
+		case WM_RBUTTONDOWN:
+
+			bird_y += 60;
+			break;
+		
+		}
+	}
+
+}
+void bar()
+{
+
+	bar_up_x = bar_up_x - n;
+	bar_down_x = bar_down_x - n;
+	if (bar_up_x == -140 && bar_down_x == -140)
+	{
+		bar_up_x = 1140;
+		bar_down_x = 1140;
+		bar_up_y = rand() % -310 - 550;//随机上方柱子出现的坐标
+		bar_down_y = bar_up_y + 700;//下方柱子紧跟上方柱子
+		putimage(bar_up_x, bar_up_y, &img_bar_up1, NOTSRCERASE);
+		putimage(bar_up_x, bar_up_y, &img_bar_up2, SRCERASE);//载入上方柱子
+		putimage(bar_down_x, bar_down_y, &img_bar_down1, NOTSRCERASE);
+		putimage(bar_down_x, bar_down_y, &img_bar_down2, SRCERASE);//输出下方柱子
+
+	}
+
+}
+
+void bar2()
+{
+
+	bar_up_x2 = bar_up_x2 - n;
+	bar_down_x2 = bar_down_x2 - n;
+	if (bar_up_x2 == -140 && bar_up_x2 == -140)
+	{
+		bar_up_x2 = 1140;
+		bar_down_x2 =1140;
+		bar_up_y2 = rand() % -310 - 550;//随机上方柱子出现的坐标
+		bar_down_y2 = bar_up_y2 + 700;//下方柱子紧跟上方柱子
+		putimage(bar_up_x2, bar_up_y2, &img_bar_up1, NOTSRCERASE);
+		putimage(bar_up_x2, bar_up_y2, &img_bar_up2, SRCERASE);//载入上方柱子
+		putimage(bar_down_x2, bar_down_y2, &img_bar_down1, NOTSRCERASE);
+		putimage(bar_down_x2, bar_down_y2, &img_bar_down2, SRCERASE);//输出下方柱子
+
+	}
+
+}
+void bar3()
+{
+
+	bar_up_x3 = bar_up_x3 - n;
+	bar_down_x3 = bar_down_x3 - n;
+	if (bar_up_x3 == -140 && bar_up_x3 == -140)
+	{
+		bar_up_x3 = 1140;
+		bar_down_x3 = 1140;
+		bar_up_y3 = rand() % -310 - 550;//随机上方柱子出现的坐标
+		bar_down_y3 = bar_up_y3 + 700;//下方柱子紧跟上方柱子
+		putimage(bar_up_x3, bar_up_y3, &img_bar_up1, NOTSRCERASE);
+		putimage(bar_up_x3, bar_up_y3, &img_bar_up2, SRCERASE);//载入上方柱子
+		putimage(bar_down_x3, bar_down_y3, &img_bar_down1, NOTSRCERASE);
+		putimage(bar_down_x3, bar_down_y3, &img_bar_down2, SRCERASE);//输出下方柱子
+
+	}
+
+}
+
+void endgame()
+{
+	IMAGE gameover1, gameover2;
+	loadimage(&gameover1, "..\\source\\gameover1.gif");
+	loadimage(&gameover2, "..\\source\\gameover2.gif");
+	putimage(c, d, &gameover1, NOTSRCERASE);
+	putimage(c, d, &gameover2, SRCINVERT);
+
+	FlushBatchDraw();
+	_getch();
+	score = 0;
+
+}
+void judge()
+{
+	if ((bar_up_x < 109 && bar_down_x < 109) && (bar_up_x > -75 && bar_down_x > -75))//柱子与小鸟在横向坐标上的碰撞判断
+	{
+		if ((bird_y < (bar_up_y + 576) && bird_y < (bar_up_y + 600)) || (bird_y > (bar_up_y + 676) && bird_y > (bar_up_y + 700)))//柱子与小鸟在纵向坐标上的碰撞判断
+			endgame();
+
+
+	}
+	
+	else if((bar_up_x2 < 109 && bar_down_x2 < 109) && (bar_up_x2 > -75 && bar_down_x2 > -75))//柱子与小鸟在横向坐标上的碰撞判断
+	{
+		if ((bird_y < (bar_up_y2 + 576) && bird_y < (bar_up_y2 + 600)) || (bird_y > (bar_up_y2 + 676) && bird_y > (bar_up_y2 + 700)))//柱子与小鸟在纵向坐标上的碰撞判断
+			endgame();
+
+
+	}
+	else if ((bar_up_x3 < 109 && bar_down_x3 < 109) && (bar_up_x3 > -75 && bar_down_x3 > -75))//柱子与小鸟在横向坐标上的碰撞判断
+	{
+		if ((bird_y < (bar_up_y3 + 576) && bird_y < (bar_up_y3 + 600)) || (bird_y > (bar_up_y3 + 676) && bird_y > (bar_up_y3 + 700)))//柱子与小鸟在纵向坐标上的碰撞判断
+			endgame();
+
+
+	}
+	else if (bird_y > 566)
+		endgame();
+	if ((bar_up_x == 80)|| (bar_up_x2 == 80)|| (bar_up_x3 == 80))//注意，判定的值需要同时是不同速度的公倍数，否则会错过
+	{
+		score++;
+	}
+
+}
+
+
+
+int main()
+{
+	
+	char num;
+	printf("————————————————————————————————————————————\n");
+	printf("操作指示：空格暂停，鼠标左键上升一格，右键下降一格,死亡后长按空格至安全地带方可继续\n");
+	printf("Space pause, the left mouse button up a case, right down a case, after death long press the space to safety zone to continue");
+	printf("————————————————————————————————————————————\n");
+	printf("请选择难度1/2/3（难度1至3依次变难）: ");
+	scanf_s("%c", &num);
+	
+	switch (num)
+	{
+	case '1':a = 350, b = 600,c=80,d=200,e1=290,e2=300; break;
+	case '2':a = 1000, b = 600,c=400,d=200,e1=900,e2=910; break;
+	case '3':a = 1000, b = 600, n = 10,c=400,d=200,e1=900,e2=910; break;
+		
+	}
+
+	
+	bird_x = 75;
+	bird_y = 200;//小鸟的初始坐标
+
+//↓↓↓柱子们的初始坐标
+	bar_up_x = 740;
+	bar_down_x = 740;
+	bar_up_y = rand() % -310 - 550;
+	bar_down_y = bar_up_y + 700;
+
+	bar_up_x2 = 1240;
+	bar_down_x2 = 1240;
+	bar_up_y2 = rand() % -310 - 550;
+	bar_down_y2 = bar_up_y2 + 700;
+	
+
+	bar_up_x3 = 1640;
+	bar_down_x3 = 1640;
+	bar_up_y3 = rand() % -310 - 550;
+	bar_down_y3 = bar_up_y3 + 700;
+	//↑↑↑初始坐标
+	startup();
+
+
+	while (_kbhit)
+	{
+		
+		
+		
+		show();
+		bar();
+		bar2();
+		bar3();
+	
+		bird();
+		judge();
+
+	}
+	
+
+	_getch();
+}
